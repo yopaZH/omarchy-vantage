@@ -46,9 +46,10 @@ vantage-bind-key --unbind   # remove the binding
 
 ## :art: Omarchy styling
 
-Vantage always restyles itself to match Omarchy — sharp corners everywhere, and outlines/accents
-taken live from the current Omarchy theme (`~/.local/state/omarchy/current/theme/colors.toml`).
-Switching your Omarchy theme and reopening Vantage picks up the new accent color automatically.
+Vantage always restyles itself to match Omarchy — sharp corners everywhere, and colors read live
+from the current Omarchy theme (`~/.local/state/omarchy/current/theme/colors.toml`): background,
+text and accent all come from there, plus light/dark mode. Switching your Omarchy theme and
+reopening Vantage picks up all of it automatically.
 
 ## :computer: Installation
 
