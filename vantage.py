@@ -225,15 +225,15 @@ def apply_omarchy_style():
 
     .boxed-list > row,
     .boxed-list-separate > row {{
-        border: 1px solid transparent;
+        border: none;
     }}
 
     .boxed-list > row:hover,
     .boxed-list-separate > row:hover,
     .boxed-list > row.vantage-match,
     .boxed-list-separate > row.vantage-match {{
-        background-color: alpha(black, 0.15);
-        border-color: alpha(white, 0.25);
+        background-color: alpha({foreground}, 0.08);
+        color: {accent};
     }}
 
     .vantage-card {{
@@ -283,6 +283,9 @@ class VantageWindow(Adw.ApplicationWindow):
         toolbar_view.set_content(self.toast_overlay)
 
         self.set_content(toolbar_view)
+
+        self.cursor_active = True
+        self.apply_cursor_style(self.matching_rows())
 
         key_controller = Gtk.EventControllerKey()
         key_controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
@@ -524,7 +527,7 @@ class VantageWindow(Adw.ApplicationWindow):
 
         self.rows = []
         self.filter_text = ""
-        self.cursor_active = False
+        self.cursor_active = True
         self.selected_pos = 0
         self.screen = screen
 
