@@ -1,0 +1,76 @@
+#!/bin/bash
+# vantage-bind-key - bind (or unbind) a physical key to launch Vantage.
+#
+# Lenovo's dedicated Vantage/"Smart" key doesn't send the same thing on every
+# model: many send XF86Favorites, some send an unmapped raw scancode. Rather
+# than hardcoding one value, this captures whatever key you actually press
+# and writes that into Hyprland's config - re-run it any time to rebind.
+set -euo pipefail
+
+BINDINGS_FILE="$HOME/.config/hypr/bindings.lua"
+MARK_BEGIN="-- vantage-bind-key: begin (re-run vantage-bind-key to change this)"
+MARK_END="-- vantage-bind-key: end"
+
+usage() {
+    echo "Usage: vantage-bind-key [--unbind]" >&2
+    exit 1
+}
+
+unbind_only=0
+case "${1:-}" in
+    "") ;;
+    --unbind) unbind_only=1 ;;
+    *) usage ;;
+esac
+
+[ "$(id -u)" -ne 0 ] || { echo "Run this as your normal desktop user, not root - it edits your own Hyprland config." >&2; exit 1; }
+[ -f "$BINDINGS_FILE" ] || { echo "No Hyprland config at $BINDINGS_FILE - is Omarchy installed?" >&2; exit 1; }
+
+remove_existing_binding() {
+    if grep -qF "$MARK_BEGIN" "$BINDINGS_FILE"; then
+        sed -i "/$MARK_BEGIN/,/$MARK_END/d" "$BINDINGS_FILE"
+    fi
+}
+
+if [ "$unbind_only" -eq 1 ]; then
+    remove_existing_binding
+    hyprctl reload >/dev/null 2>&1 || true
+    echo "Removed the Vantage key binding."
+    exit 0
+fi
+
+[ -n "${WAYLAND_DISPLAY:-}" ] || { echo "No Wayland session detected - run this from inside Hyprland." >&2; exit 1; }
+command -v wev >/dev/null 2>&1 || { echo "wev is required to detect the key. Install it with: sudo pacman -S --needed wev" >&2; exit 1; }
+
+echo "A tiny window will pop up. Click into it, then press the key you want to launch Vantage"
+echo "(e.g. the dedicated Lenovo Vantage/Smart key). Waiting up to 15 seconds..."
+
+line=$(timeout 15 wev -f wl_keyboard:key 2>/dev/null | grep -m1 'state: 1 (pressed)' || true)
+
+if [ -z "$line" ]; then
+    echo "No key press detected. Try again, or edit $BINDINGS_FILE by hand." >&2
+    exit 1
+fi
+
+sym=$(grep -oP '(?<=sym: )\S+' <<<"$line" || true)
+code=$(grep -oP '(?<=; key: )[0-9]+(?=;)' <<<"$line" || true)
+
+if [ -n "$sym" ] && [ "$sym" != "NoSymbol" ]; then
+    key_expr="$sym"
+elif [ -n "$code" ]; then
+    key_expr="code:$code"
+else
+    echo "Couldn't read a usable key from that press." >&2
+    exit 1
+fi
+
+remove_existing_binding
+{
+    echo ""
+    echo "$MARK_BEGIN"
+    echo "o.bind(\"$key_expr\", \"Lenovo Vantage\", { launch = \"vantage\" })"
+    echo "$MARK_END"
+} >> "$BINDINGS_FILE"
+
+hyprctl reload >/dev/null 2>&1 || true
+echo "Bound $key_expr to launch Vantage."
