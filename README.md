@@ -10,22 +10,21 @@ try to detect or support anything else.
 
 ![Vantage running on Omarchy](images/screenshot.png)
 
-## :rocket: Features
+## :rocket: What this fork changes
 
-* Conservation Mode (limit battery charge to prolong its life)
-* Always-On USB (charge devices via USB while the laptop is off)
-* Thermal/Fan Mode (silent, standard, dust cleaning, efficient)
-* FN Key Lock
-* Camera Privacy Switch
-* Microphone Privacy Switch
-* Touchpad Switch
-* Wi-Fi Switch
+* Rewritten as a native GTK4/libadwaita app (the upstream project is Electron)
+* Styled to match Omarchy automatically — see below
+* Installer, styling and key binding assume Arch Linux + Hyprland + Omarchy; no other distro
+  detection or support
 * Launch from your Lenovo Smart/Vantage key, or search for it like anything else in Omarchy's menu
+* `vantage-bind-key` helper to capture and (re)bind that key
+* Hardware toggles run through a small privileged helper authorized by a scoped polkit policy
+  (`org.vantage.helper`), so switching them on/off doesn't prompt for a password on every
+  change — only Wi-Fi, touchpad and microphone (which don't need root) run unprivileged directly
 
-Hardware toggles are applied through a small privileged helper authorized by a scoped
-polkit policy (`org.vantage.helper`), so switching them on/off doesn't prompt for a password
-on every change — only Wi-Fi, touchpad and microphone (which don't need root) run unprivileged
-directly.
+The underlying hardware controls (Conservation Mode, Always-On USB, Thermal/Fan Mode, FN Key
+Lock, Camera/Microphone/Touchpad/Wi-Fi switches) come from upstream
+[niizam/vantage](https://github.com/niizam/vantage).
 
 ## :zap: The Smart/Vantage key
 
